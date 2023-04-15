@@ -1,0 +1,76 @@
+vlayout weight  (space covered by views left in layout)
+layout sum     
+layout gravity  (center,left,right etc)
+nested linear layout
+
+when we move big view in constraint layout, small view attached to it also moves.
+
+But when we attach small view at top of big view, it will only move according to
+size of text of big view
+
+Scale Type for images, image view
+
+Drawable -> New -> vector asset -> clip art
+
+flaticon for avatars, dribble, uplabs
+
+start for left, end for right in constraints
+
+begin for left, end for right in guidelines
+
+We use guidlines instead of margins in constraint layouts
+
+Ctrl+Click to remove constraint
+
+We can make splash screen using thread class and first we use getSupportActionbar().hide()
+and then we can make run function inside it we use sleep function in try block, then in
+catch block we catch exceptin and in finally block we start our actual main activity
+after creating thread object. we start the activity
+
+To make back arrow on activity, we use supportactionbar with setDisplayOnHomeEnabled function
+value true and setTitle for title. Similarly, we use onSupportNavigation function with
+backpressed function called in it for backKey enabled
+
+Explicit Intent:
+These are used to send data from one activity to other, when we actually know about
+our destination source.
+
+Implicit Intent: 
+Intents are used to call services/activities as one category and broadcast receivers
+like low battery notification, power saving mod, low your brightness, change network from 
+wifi to data.
+
+Package manager is just use to handle intents and it checks for apps that are
+suitable for intents
+
+
+intent.setAction(Action_Send)// to share data with other apps
+intent.setType("text/plain") // set type of text
+
+We use recyclerview to make grids and lists. Adapter can be used to place data on views
+online via databases. It is actually middle man.
+
+Snackbar is like toast but it has button in it, binding is duplicate of linking
+frontend with backend
+Actually, for every layout file , binding class is generated (Pascal Case)
+
+Benefits:
+It has properties for views in binding class. It will be type safety, like property generated 
+will match with exact view. No null reference error as it will have only defined properties
+for each view we are using. It generates compile time error
+
+The inflate() method returns an instance of the binding class 
+that contains references to all the views defined in the layout file.
+
+Table is root. Layout is our room and decorations are our views
+Just like the table or stand in our party decoration example, 
+Showroom is root and views are cars inside it  and place holding show room is like layout.
+binding.root is the view that holds all the other views defined in the layout file, 
+and it serves as the starting point for accessing and manipulating the views in the layout file.
+Use unbind() to avoid memory leaks.
+
+
+In addition to memory leaks, failing to unbind View Binding instances can also cause issues with configuration changes. 
+For example, if your app is in landscape mode and the user rotates the device to portrait mode, the system will destroy and recreate the activity to apply the new configuration. 
+If you haven't properly released the View Binding instance in onDestroy(), the new activity instance will hold a reference to the old instance's views, 
+which can cause unexpected behavior.
