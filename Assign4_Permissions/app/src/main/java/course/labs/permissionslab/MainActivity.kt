@@ -1,14 +1,18 @@
 package course.labs.permissionslab
 
-import android.Manifest
+
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
+import androidx.databinding.DataBindingUtil
 import com.google.android.material.snackbar.Snackbar
 import course.labs.common.showSnackbar
 import course.labs.permissionslab.databinding.ActivityMainBinding
@@ -26,140 +30,135 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+//        binding = ActivityMainBinding.inflate(layoutInflater)
+//        setContentView(binding.root)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+
 
         binding.fab.setOnClickListener {
-            onButtonClick()
+            onButtonClick(PERMISSIONS[0],12)
         }
-    }
+        binding.fab2.setOnClickListener {
 
-    private fun onButtonClick() {
+            onButtonClick(PERMISSIONS[1],13)
+        }
+        val prefs = getPreferences(Context.MODE_PRIVATE)
+        val isPermissionAsked = prefs.getBoolean(KEY_PERMISSION,false)
+        if(!isPermissionAsked){
+//            requestCPermissionLauncher.launch(PERMISSIONS[1])
+//            requestPermissionLauncher.launch(PERMISSIONS[0])
+            requestPermissionsLauncher.launch(PERMISSIONS)
 
-        when {
-            //TODO: If the permission has already been granted dial the number.
-            // [Hint]: Use checkSelfPermission to check if the permission has been granted, and then call the dialPhoneNumber() method.
-
-            //TODO: Remove the variable - PERMISSION, after completing the above block.
-
-            // If the permission has already been granted dial the number.
-            // Use checkSelfPermission to check if the permission has been granted,
-            // and then call the dialPhoneNumber() method.
-            // This code is used to check Self Permission whether permission has been granted
-            // It will execute and call diaPhoneNumber() function in case permission is awarded
-            // by user. Other wise it will check if user has already denied
-            checkSelfPermission(CALL_PERMISSION ) == PackageManager.PERMISSION_GRANTED -> {
-                dialPhoneNumber() // Lambda expression
-            }
-
-            //TODO: Remove the variable - PERMISSION, after completing the above block.
-
-             // I removed variable permission.
-
-            // According to me, we are using static/companion object permission variable here
-            // That's why there's no need to defined PERMISSION variable at upper place before when
-
-
-            // Check if the user has previously denied permission and
-            // therefore a rationale should be provided to help the user
-            // understand the importance of granting this permission.
-            shouldShowRequestPermissionRationale(CALL_PERMISSION ) -> {
-                binding.root.showSnackbar(
-                    R.string.need_permission_string,
-                    Snackbar.LENGTH_INDEFINITE,
-                    android.R.string.ok
-                ) {
-                    requestPermissionLauncher.launch(CALL_PERMISSION )
-                }
-            }
-
-            // User hasn't been asked for permission yet.
-            else -> {
-                // Launch the permission request launcher.
-                requestPermissionLauncher.launch(CALL_PERMISSION )
+            prefs.edit{
+                putBoolean(KEY_PERMISSION,true)
             }
         }
+
     }
+    private val requestPermissionsLauncher: ActivityResultLauncher<Array<out String>> =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        }
+
+
+
+
+    private fun onButtonClick( PERMISSION : String, reqCode : Int) {
+
+    when {
+
+        checkSelfPermission(PERMISSION) == PackageManager.PERMISSION_GRANTED -> {
+            if (reqCode == 12)
+                perFormAction(12)
+            else
+                perFormAction(13)
+        }
+
+
+        shouldShowRequestPermissionRationale(PERMISSION) -> {
+            val myPermissionString = if (reqCode == 12)
+                R.string.need_permission_string
+            else R.string.need_c_permission_string
+
+            binding.root.showSnackbar(
+                myPermissionString,
+                Snackbar.LENGTH_INDEFINITE,
+                android.R.string.ok
+            ) {
+                if (reqCode == 12)
+                requestPermissionLauncher.launch(PERMISSION)
+                else    requestCPermissionLauncher.launch(PERMISSION)
+            }
+        }
+
+        // User hasn't been asked for permission yet.
+        else -> {
+            if(reqCode==12)
+            // Launch the permission request launcher.
+            requestPermissionLauncher.launch(PERMISSION)
+            else
+            requestCPermissionLauncher.launch(PERMISSION)
+
+        }
+    }
+    }
+
 
     // Create the permission request launcher.
     // If permission granted, dial the phone number.
     private val requestPermissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                dialPhoneNumber()
+                perFormAction(12)
             } else {
                 Toast.makeText(
                     this, getString(R.string.need_permission_string),
                     Toast.LENGTH_SHORT
                 ).show()
             }
+
+
+        }
+    private val requestCPermissionLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                perFormAction(13)
+            } else {
+                Toast.makeText(
+                    this, getString(R.string.need_c_permission_string),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
 
-    private fun dialPhoneNumber() {
-        // Create an Intent with the appropriate action and data.
-        //TODO: Create an Intent with the appropriate action and data.
-        // [Hint]:Implicitly start an Activity to call the desired Phone Number.
 
-        // Self explored things
+    private fun perFormAction(reqCode: Int) {
+
         // Action_Dial ask whether to make call or not and action_call directly calls at number
+        if(reqCode==12) {
+            val intent = Intent(ACTION_CALL_PHONE)
+            // tel:5554 this is used to get uniform resource locator value
+            intent.data = Uri.parse(PHONE_NUMBER_URI)
 
-        val intent = Intent(ACTION_CALL_PHONE)
+           // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        }
+        else
+            startActivity(Intent(ACTION_CAMERA))
 
-        // tel:5554 this is used to get uniform resource locator value
-        intent.data = Uri.parse(PHONE_NUMBER_URI)
-
-
-        /* to create a new task
-        According to me, I explored that task is actually a holder of activities
-        It holds them in stack. In this case, we can say that a new task (stack) will be created
-        and we added calling phone activity in it. As there's no other activity than calling phone
-        in new task so it will on top as stack contains only 1 activity
-        Above comments are explored things that helps me to understand about my syntax written
-
-        */
-
-         /* we can use addFlags, setFlags too to set flag
-         setFlags as there is s so we can add other flags too
-         addFlags is just adding into list or array or linked list any container u can assume
-         Examples:
-         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-         setFlags is actually setter function that we studied it's convention
-         set for setting/specifying and get for output/getting
-          */
-
-        // Here we set flags of intent class object to new task
-        // we can use
-
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
     }
-    // In c++ , we used static keyword to hold static data whose life is till destruction of program
-    // In classes if we have static data members, it will behave same of all objects of those classes
-    // Similarly. here we defined ACTION_CALL_PHONE whose intent to be perform action of calling a number
-    // Here, URI is uniform resources locator
-    // Actually, it has 2 parts scheme and location. Like web page https://www.umt.com/
-    // here https is scheme that is protocol that defines how to access the location
 
-    // Similarly here tel is scheme and 5554 is location which is phone number
-    // tel tells us that it's used to make telephone call
 
-    // As we studied in class about PERMISSIONS , here I defined permission variable to access the
-    // manifest file call_phone permission. It's actually uit
     companion object {
-        //TODO: Create a companion object that contains and defines
-        // the ACTION string for dialing a phone number without user input,
-        // the PERMISSION needed for doing this,
-        // and PHONE_NUMBER_URI to be used in the Intent (the desired number is 5554).
 
-        // here i've used 5554 as phone number because it was given as desired in file
-        // here const mean constant whole value can't be changed
-        // private means can't be inherited or to be used only in defined class
-        // val means also not to be override and can't be ref
-        // difference is const is used in companion objects and it's compile time
-        // and val can take value at run time like val num : Int.. It can be initialized later
+
         private const val ACTION_CALL_PHONE = "android.intent.action.CALL"
+        private const val ACTION_CAMERA = MediaStore.ACTION_IMAGE_CAPTURE
         private const val PHONE_NUMBER_URI = "tel:5554"
-        private const val CALL_PERMISSION = Manifest.permission.CALL_PHONE
+        private val PERMISSIONS = arrayOf("android.permission.CALL_PHONE","android.permission.CAMERA")
+        private const val KEY_PERMISSION = "permission_asked"
+//        private const val CALL_PERMISSION = Manifest.permission.CALL_PHONE
+//        private const val CAMERA_PERMISSION = Manifest.permission.CAMERA
+
     }
 }
